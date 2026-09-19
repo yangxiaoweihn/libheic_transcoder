@@ -86,7 +86,7 @@ pub unsafe extern "C" fn heic_to_jpeg(
     let mut boxed = jpeg_buf.into_boxed_slice();
     *output = boxed.as_mut_ptr();
     *output_len = boxed.len();
-    std::mem::forget(boxed);
+    std::mem::forget(boxed); 
 
     0
 }
