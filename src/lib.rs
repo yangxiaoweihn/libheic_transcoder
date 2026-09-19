@@ -60,14 +60,14 @@ pub unsafe extern "C" fn heic_to_jpeg(
     let stride = plane.stride;
     let row_bytes = (width * 3) as usize;
 
-    if plane.data.len() < (height as usize).saturating_mul(stride as usize) {
+    if plane.data.len() < (height as usize).saturating_mul(stride) {
         return -5;
     }
 
     // 逐行拷贝，去掉 stride padding
     let mut rgb = Vec::with_capacity(row_bytes * height as usize);
     for y in 0..height {
-        let start = (y * stride) as usize;
+        let start = y as usize * stride;
         let end = start + row_bytes;
         rgb.extend_from_slice(&plane.data[start..end]);
     }
