@@ -61,6 +61,11 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/bin
           cat > $GITHUB_WORKSPACE/bin/cmake << 'EOF'
           #!/bin/bash
+          for arg in "$@"; do
+            if [[ "$arg" == "--build" ]] || [[ "$arg" == "--install" ]]; then
+              exec /opt/homebrew/bin/cmake "$@"
+            fi
+          done
           exec /opt/homebrew/bin/cmake "$@" \
             -DCMAKE_DISABLE_FIND_PACKAGE_JPEG=TRUE \
             -DCMAKE_DISABLE_FIND_PACKAGE_WebP=TRUE \
