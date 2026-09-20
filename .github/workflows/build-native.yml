@@ -38,19 +38,19 @@ jobs:
           make -j$(sysctl -n hw.ncpu)
           make install
 
-      - name: Stub pkgconfig for libjpeg/libsharpyuv
+      - name: Stub pkgconfig
         run: |
           mkdir -p vendor/lib/pkgconfig
           cat > vendor/lib/pkgconfig/libjpeg.pc << 'EOF'
           Name: libjpeg
-          Description: stub (not actually needed)
+          Description: stub
           Version: 0
           Libs:
           Cflags:
           EOF
           cat > vendor/lib/pkgconfig/libsharpyuv.pc << 'EOF'
           Name: libsharpyuv
-          Description: stub (not actually needed)
+          Description: stub
           Version: 0
           Libs:
           Cflags:
@@ -61,8 +61,8 @@ jobs:
           PKG_CONFIG_PATH: ${{ github.workspace }}/vendor/lib/pkgconfig
           PKG_CONFIG_LIBDIR: ${{ github.workspace }}/vendor/lib/pkgconfig
           PKG_CONFIG_ALLOW_CROSS: "1"
-          CMAKE_IGNORE_PREFIX_PATH: "/opt/homebrew;/usr/local"
-          CMAKE_IGNORE_PATH: "/opt/homebrew;/usr/local"
+          CMAKE_DISABLE_FIND_PACKAGE_JPEG: "TRUE"
+          CMAKE_DISABLE_FIND_PACKAGE_WebP: "TRUE"
           CC: clang -arch x86_64
           CXX: clang++ -arch x86_64
           CFLAGS: -arch x86_64
