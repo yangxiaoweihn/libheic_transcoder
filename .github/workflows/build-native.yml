@@ -28,6 +28,7 @@ jobs:
           cd libde265
           mkdir build && cd build
           cmake \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/vendor \
             -DCMAKE_OSX_ARCHITECTURES=x86_64 \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
