@@ -38,6 +38,24 @@ jobs:
           make -j$(sysctl -n hw.ncpu)
           make install
 
+      - name: Stub pkgconfig for libjpeg/libsharpyuv
+        run: |
+          mkdir -p vendor/lib/pkgconfig
+          cat > vendor/lib/pkgconfig/libjpeg.pc << 'EOF'
+          Name: libjpeg
+          Description: stub (not actually needed)
+          Version: 0
+          Libs:
+          Cflags:
+          EOF
+          cat > vendor/lib/pkgconfig/libsharpyuv.pc << 'EOF'
+          Name: libsharpyuv
+          Description: stub (not actually needed)
+          Version: 0
+          Libs:
+          Cflags:
+          EOF
+
       - name: Build
         env:
           PKG_CONFIG_PATH: ${{ github.workspace }}/vendor/lib/pkgconfig
