@@ -10,65 +10,31 @@ on:
 
 jobs:
   build-x86_64:
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cmake
-        run: brew install cmake
-
-      - name: Build
-        run: cargo build --release
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: libheic_transcoder-macos-x86_64
-          path: target/release/libheic_transcoder.dylib
-
-  build-arm64:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
 
       - name: Install cmake
         run: brew install cmake
 
       - name: Build
-        run: cargo build --release
+        env:
+          CC: clang -arch x86_64
+          CXX: clang++ -arch x86_64
+          CFLAGS: -arch x86_64
+          CXXFLAGS: -arch x86_64
+          LDFLAGS: -arch x86_64
+        run: cargo build --release --target x86_64-apple-darwin
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: libheic_transcoder-macos-arm64
-          path: target/release/libheic_transcoder.dylib
-
-  merge-universal:
-    needs: [build-x86_64, build-arm64]
-    runs-on: macos-14
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: libheic_transcoder-macos-x86_64
-          path: x86_64
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: libheic_transcoder-macos-arm64
-          path: arm64
-
-      - name: Merge with lipo
+      - name: Verify arch
         run: |
-          lipo -create \
-            x86_64/libheic_transcoder.dylib \
-            arm64/libheic_transcoder.dylib \
-            -output libheic_transcoder.dylib
-          file libheic_transcoder.dylib
-          lipo -info libheic_transcoder.dylib
+          file target/x86_64-apple-darwin/release/libheic_transcoder.dylib
 
       - uses: actions/upload-artifact@v4
         with:
-          name: libheic_transcoder-macos-universal
-          path: libheic_transcoder.dylib
+          name: libheic_transcoder-macos-x86_64
+          path: target/x86_64-apple-darwin/release/libheic_transcoder.dylib
