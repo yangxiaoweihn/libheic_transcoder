@@ -102,7 +102,7 @@ pub unsafe extern "C" fn jpeg_to_heic(
     let mut heic_buf = Vec::new();
     let encoder = HeifEncoder::new(&mut heic_buf)
         .with_quality(quality)          // 0–100
-        .with_preset(Preset::Slow)      // x265 预设
+        .with_preset(Preset::Fast)      // x265 预设
         .with_chroma(Chroma::Yuv420);   // 4:2:0，iOS 兼容性最好
 
     if img.write_with_encoder(encoder).is_err() {
