@@ -3,8 +3,7 @@ name: Build Native
 on:
   push:
     paths:
-      - 'src/**'
-      - 'Cargo.toml'
+      - 'lib/rust/**'
       - '.github/workflows/build-native.yml'
   workflow_dispatch:
 
@@ -20,23 +19,6 @@ jobs:
 
       - name: Install cmake
         run: brew install cmake
-
-      - name: Build libde265 for x86_64
-        run: |
-          git clone --depth 1 --branch v1.0.15 \
-            https://github.com/strukturag/libde265.git
-          cd libde265
-          mkdir build && cd build
-          cmake \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/vendor \
-            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DENABLE_SDL=OFF \
-            ..
-          make -j$(sysctl -n hw.ncpu)
-          make install
 
       - name: Stub pkgconfig
         run: |
@@ -74,6 +56,7 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/bin/cmake
 
       - name: Build
+        working-directory: lib/rust
         env:
           CMAKE: ${{ github.workspace }}/bin/cmake
           PKG_CONFIG_PATH: ${{ github.workspace }}/vendor/lib/pkgconfig
@@ -87,11 +70,12 @@ jobs:
         run: cargo build --release --target x86_64-apple-darwin
 
       - name: Verify
+        working-directory: lib/rust
         run: |
           file target/x86_64-apple-darwin/release/libheic_transcoder.dylib
-          nm -gU target/x86_64-apple-darwin/release/libheic_transcoder.dylib | grep -i de265 | head
+          nm -gU target/x86_64-apple-darwin/release/libheic_transcoder.dylib | grep -E 'jpeg_to_heic|heic_to_jpeg|heic_free'
 
       - uses: actions/upload-artifact@v4
         with:
           name: libheic_transcoder-macos-x86_64
-          path: target/x86_64-apple-darwin/release/libheic_transcoder.dylib
+          path: lib/rust/target/x86_64-apple-darwin/release/libheic_transcoder.dylib
