@@ -3,7 +3,8 @@ name: Build Native
 on:
   push:
     paths:
-      - 'lib/rust/**'
+      - 'src/**'
+      - 'Cargo.toml'
       - '.github/workflows/build-native.yml'
   workflow_dispatch:
 
@@ -56,7 +57,6 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/bin/cmake
 
       - name: Build
-        working-directory: lib/rust
         env:
           CMAKE: ${{ github.workspace }}/bin/cmake
           PKG_CONFIG_PATH: ${{ github.workspace }}/vendor/lib/pkgconfig
@@ -70,7 +70,6 @@ jobs:
         run: cargo build --release --target x86_64-apple-darwin
 
       - name: Verify
-        working-directory: lib/rust
         run: |
           file target/x86_64-apple-darwin/release/libheic_transcoder.dylib
           nm -gU target/x86_64-apple-darwin/release/libheic_transcoder.dylib | grep -E 'jpeg_to_heic|heic_to_jpeg|heic_free'
@@ -78,4 +77,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: libheic_transcoder-macos-x86_64
-          path: lib/rust/target/x86_64-apple-darwin/release/libheic_transcoder.dylib
+          path: target/x86_64-apple-darwin/release/libheic_transcoder.dylib
