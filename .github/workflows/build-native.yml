@@ -43,6 +43,9 @@ jobs:
           git clone --depth 1 --branch 4.1 \
             https://bitbucket.org/multicoreware/x265_git.git
           cd x265_git/source
+          # CMake 4.x 移除了 CMP0025/CMP0054 的 OLD 行为，删掉显式设置
+          sed -i '' '/cmake_policy(SET CMP0025 OLD)/d' CMakeLists.txt
+          sed -i '' '/cmake_policy(SET CMP0054 OLD)/d' CMakeLists.txt
           cmake \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/vendor \
