@@ -187,7 +187,7 @@ pub unsafe extern "C" fn jpeg_to_heic_with_uuid(
         Ok(o) => o,
         Err(_) => return -5,
     };
-    let handle = match ctx.encode_image(&heif_image, &mut encoder, Some(&encoding_options)) {
+    let handle = match ctx.encode_image(&heif_image, &mut encoder, Some(encoding_options)) {
         Ok(h) => h,
         Err(_) => return -5,
     };
