@@ -1,5 +1,5 @@
 use image::codecs::jpeg::JpegEncoder;
-use image::{ExtendedColorType, ImageEncoder};
+use image::ExtendedColorType;
 use libheif_rs::{
     Channel, ColorSpace, CompressionFormat, EncoderQuality, EncodingOptions,
     HeifContext, LibHeif, RgbChroma,
@@ -51,13 +51,13 @@ pub unsafe extern "C" fn heic_to_jpeg(
     let stride = plane.stride;
     let row_bytes = (width * 3) as usize;
 
-    if plane.data.len() < (height as usize).saturating_mul(stride as usize) {
+    if plane.data.len() < (height as usize).saturating_mul(stride) {
         return -5;
     }
 
     let mut rgb = Vec::with_capacity(row_bytes * height as usize);
     for y in 0..height {
-        let start = (y * stride) as usize;
+        let start = (y as usize) * stride;
         let end = start + row_bytes;
         rgb.extend_from_slice(&plane.data[start..end]);
     }
@@ -90,8 +90,8 @@ pub unsafe extern "C" fn heic_to_jpeg(
 /// 成功返回 0；失败返回负值：
 ///   -1: 参数非法
 ///   -2: JPEG 解码失败
-///   -3: 创建 HEIC 上下文失败
-///   -4: 获取 HEVC 编码器失败
+///   -3: 创建 HEIC 上下文/图像失败
+///   -4: 获取或配置 HEVC 编码器失败
 ///   -5: 编码失败
 ///   -6: 注入 EXIF 失败
 ///   -7: 写出字节失败
@@ -134,11 +134,14 @@ pub unsafe extern "C" fn jpeg_to_heic_with_uuid(
 
     // 2. 创建 libheif 图像并填充像素
     let lib_heif = LibHeif::new();
-    let mut heif_image =
-        match libheif_rs::Image::new(width, height, ColorSpace::Rgb(RgbChroma::Rgb)) {
-            Ok(i) => i,
-            Err(_) => return -3,
-        };
+    let mut heif_image = match libheif_rs::Image::new(
+        width,
+        height,
+        ColorSpace::Rgb(RgbChroma::Rgb),
+    ) {
+        Ok(i) => i,
+        Err(_) => return -3,
+    };
     if heif_image
         .create_plane(Channel::Interleaved, width, height, 8)
         .is_err()
@@ -146,15 +149,18 @@ pub unsafe extern "C" fn jpeg_to_heic_with_uuid(
         return -3;
     }
     {
-        let mut plane = match heif_image.planes_mut().interleaved {
+        let mut planes = heif_image.planes_mut();
+        let plane = match planes.interleaved {
             Some(p) => p,
             None => return -3,
         };
         let src = rgb.as_raw();
-        for y in 0..height as usize {
-            let src_start = y * width as usize * 3;
-            let dst_start = y * plane.stride as usize;
-            let len = width as usize * 3;
+        let width_usize = width as usize;
+        let height_usize = height as usize;
+        for y in 0..height_usize {
+            let src_start = y * width_usize * 3;
+            let dst_start = y * plane.stride;
+            let len = width_usize * 3;
             plane.data[dst_start..dst_start + len]
                 .copy_from_slice(&src[src_start..src_start + len]);
         }
@@ -177,7 +183,10 @@ pub unsafe extern "C" fn jpeg_to_heic_with_uuid(
     }
 
     // 4. 编码
-    let encoding_options = EncodingOptions::new();
+    let encoding_options = match EncodingOptions::new() {
+        Ok(o) => o,
+        Err(_) => return -5,
+    };
     let handle = match ctx.encode_image(&heif_image, &mut encoder, Some(&encoding_options)) {
         Ok(h) => h,
         Err(_) => return -5,
@@ -208,6 +217,7 @@ pub unsafe extern "C" fn jpeg_to_heic_with_uuid(
 // 内存释放
 // ===========================================================================
 
+/// 释放 [heic_to_jpeg] 或 [jpeg_to_heic_with_uuid] 分配的输出缓冲。
 #[no_mangle]
 pub unsafe extern "C" fn heic_free(ptr: *mut c_uchar, len: usize) {
     if !ptr.is_null() && len > 0 {
