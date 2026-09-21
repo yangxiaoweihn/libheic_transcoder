@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-heif-rs = "26.7"
+libheif-rs = { version = "2.7", features = ["embedded-libheif"] }
 image = { version = "0.25", default-features = false, features = ["jpeg"] }
 
 [profile.release]

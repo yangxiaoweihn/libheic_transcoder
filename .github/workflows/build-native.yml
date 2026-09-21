@@ -21,6 +21,41 @@ jobs:
       - name: Install cmake
         run: brew install cmake
 
+      - name: Build libde265 for x86_64
+        run: |
+          git clone --depth 1 --branch v1.0.15 \
+            https://github.com/strukturag/libde265.git
+          cd libde265
+          mkdir build && cd build
+          cmake \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/vendor \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DENABLE_SDL=OFF \
+            ..
+          make -j$(sysctl -n hw.ncpu)
+          make install
+
+      - name: Build x265 for x86_64
+        run: |
+          git clone --depth 1 --branch 4.1 \
+            https://bitbucket.org/multicoreware/x265_git.git
+          cd x265_git/source
+          cmake \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/vendor \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DENABLE_SHARED=OFF \
+            -DENABLE_CLI=OFF \
+            -DHIGH_BIT_DEPTH=OFF \
+            -DENABLE_HDR10_PLUS=OFF \
+            .
+          make -j$(sysctl -n hw.ncpu)
+          make install
+
       - name: Stub pkgconfig
         run: |
           mkdir -p vendor/lib/pkgconfig
@@ -72,7 +107,7 @@ jobs:
       - name: Verify
         run: |
           file target/x86_64-apple-darwin/release/libheic_transcoder.dylib
-          nm -gU target/x86_64-apple-darwin/release/libheic_transcoder.dylib | grep -E 'jpeg_to_heic|heic_to_jpeg|heic_free'
+          nm -gU target/x86_64-apple-darwin/release/libheic_transcoder.dylib | grep -E 'jpeg_to_heic_with_uuid|heic_to_jpeg|heic_free'
 
       - uses: actions/upload-artifact@v4
         with:
