@@ -14,3 +14,9 @@ image = { version = "0.25", default-features = false, features = ["jpeg"] }
 lto = true
 opt-level = 3
 strip = "symbols"
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-arch", "-C", "link-arg=x86_64"]
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-arch", "-C", "link-arg=arm64"]
