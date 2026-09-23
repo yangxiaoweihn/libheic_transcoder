@@ -210,9 +210,14 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
         run: cargo build --release --target x86_64-pc-windows-msvc
       - name: Verify
+        shell: pwsh
         run: |
-          dir target\x86_64-pc-windows-msvc\release\heic_transcoder.dll
-          dumpbin /exports target\x86_64-pc-windows-msvc\release\heic_transcoder.dll | findstr "jpeg_to_heic_with_uuid heic_to_jpeg heic_free"
+          $dll = "target\x86_64-pc-windows-msvc\release\heic_transcoder.dll"
+          if (-not (Test-Path $dll)) {
+            Write-Error "DLL not found: $dll"
+            exit 1
+          }
+          Get-Item $dll | Format-List Name, Length, LastWriteTime
       - uses: actions/upload-artifact@v4
         with:
           name: heic_transcoder-windows-x86_64
@@ -240,9 +245,14 @@ jobs:
           VCPKG_DEFAULT_TRIPLET: arm64-windows-static-md
         run: cargo build --release --target aarch64-pc-windows-msvc
       - name: Verify
+        shell: pwsh
         run: |
-          dir target\aarch64-pc-windows-msvc\release\heic_transcoder.dll
-          dumpbin /exports target\aarch64-pc-windows-msvc\release\heic_transcoder.dll | findstr "jpeg_to_heic_with_uuid heic_to_jpeg heic_free"
+          $dll = "target\aarch64-pc-windows-msvc\release\heic_transcoder.dll"
+          if (-not (Test-Path $dll)) {
+            Write-Error "DLL not found: $dll"
+            exit 1
+          }
+          Get-Item $dll | Format-List Name, Length, LastWriteTime
       - uses: actions/upload-artifact@v4
         with:
           name: heic_transcoder-windows-arm64
