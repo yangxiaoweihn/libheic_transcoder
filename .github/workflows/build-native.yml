@@ -203,11 +203,11 @@ jobs:
       - name: Build libheif via vcpkg
         run: cargo vcpkg -v build
         env:
-          VCPKG_DEFAULT_TRIPLET: x64-windows-static
+          VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
       - name: Build
         env:
           VCPKG_ROOT: ${{ github.workspace }}/target/vcpkg
-          VCPKG_DEFAULT_TRIPLET: x64-windows-static
+          VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
         run: cargo build --release --target x86_64-pc-windows-msvc
       - name: Verify
         run: |
@@ -233,11 +233,11 @@ jobs:
       - name: Build libheif via vcpkg
         run: cargo vcpkg -v build
         env:
-          VCPKG_DEFAULT_TRIPLET: arm64-windows-static
+          VCPKG_DEFAULT_TRIPLET: arm64-windows-static-md
       - name: Build
         env:
           VCPKG_ROOT: ${{ github.workspace }}/target/vcpkg
-          VCPKG_DEFAULT_TRIPLET: arm64-windows-static
+          VCPKG_DEFAULT_TRIPLET: arm64-windows-static-md
         run: cargo build --release --target aarch64-pc-windows-msvc
       - name: Verify
         run: |
